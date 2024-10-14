@@ -17,11 +17,11 @@ class ChatwootHub
   end
 
   def self.pricing_plan
-    InstallationConfig.find_by(name: 'INSTALLATION_PRICING_PLAN')&.value || 'community'
+    'premium'
   end
 
   def self.pricing_plan_quantity
-    InstallationConfig.find_by(name: 'INSTALLATION_PRICING_PLAN_QUANTITY')&.value || 0
+    100000000
   end
 
   def self.support_config
@@ -55,17 +55,15 @@ class ChatwootHub
   end
 
   def self.sync_with_hub
-    begin
-      info = instance_config
-      info = info.merge(instance_metrics) unless ENV['DISABLE_TELEMETRY']
-      response = RestClient.post(PING_URL, info.to_json, { content_type: :json, accept: :json })
-      parsed_response = JSON.parse(response)
-    rescue *ExceptionList::REST_CLIENT_EXCEPTIONS => e
-      Rails.logger.error "Exception: #{e.message}"
-    rescue StandardError => e
-      ChatwootExceptionTracker.new(e).capture_exception
-    end
-    parsed_response
+    {
+      version: Chatwoot.config[:version],
+      plan: "premium",
+      plan_quantity: 10000000,
+      chatwoot_support_identifier_hash: SecureRandom.hex(64),
+      chatwoot_support_website_token: SecureRandom.hex(24),
+      chatwoot_support_script_url: "https://app.chatwoot.com"
+    }
+    
   end
 
   def self.register_instance(company_name, owner_name, owner_email)
